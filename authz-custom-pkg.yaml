@@ -8,9 +8,9 @@ spec:
       names:
         kind: AnlanAuthzHardCoded
   targets:
-    - target: admission.k8s.gatekeeper.sh
+    - target: admission.k8s.gatekeeper
       rego: |
-        package rbac.authz
+        package anlanauthzhardcoded
       
         violation[{"msg": msg, "details": {}}] {
             not allow
@@ -31,7 +31,7 @@ spec:
 
         default allow = false
         allow {
-            roles := user_roles["bob"]
+            roles := user_roles["alice"]
             r := roles[_]
             permissions := role_permissions[r]
             p := permissions[_]
