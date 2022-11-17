@@ -31,7 +31,7 @@ spec:
 
         default allow = false
         allow {
-            roles := user_roles["bob"]
+            roles := user_roles["alice"]
             r := roles[_]
             permissions := role_permissions[r]
             p := permissions[_]
