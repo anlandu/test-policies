@@ -7,20 +7,6 @@ spec:
     spec:
       names:
         kind: AnlanAuthzHardCoded
-      validation:
-        # Schema for the `parameters` field
-        openAPIV3Schema:
-          properties:
-            excludedContainers:
-              type: array
-              items:
-                type: string
-            excludedImages:
-              description: >-
-                RBAC with hard-coded request name, action, and object: should allow
-              type: array
-              items:
-                type: string
   targets:
     - target: admission.k8s.gatekeeper.sh
       rego: |
