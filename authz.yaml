@@ -1,0 +1,56 @@
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: anlanauthzhardcoded
+spec:
+  crd:
+    spec:
+      names:
+        kind: AnlanAuthzHardCoded
+      validation:
+        # Schema for the `parameters` field
+        openAPIV3Schema:
+          properties:
+            excludedContainers:
+              type: array
+              items:
+                type: string
+            excludedImages:
+              description: >-
+                RBAC with hard-coded request name, action, and object: should allow
+              type: array
+              items:
+                type: string
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package rbac.authz
+
+        # user-role assignments
+        user_roles := {
+            "alice": ["engineering", "webdev"],
+            "bob": ["hr"]
+        }
+
+        # role-permissions assignments
+        role_permissions := {
+            "engineering": [{"action": "read",  "object": "server123"}],
+            "webdev":      [{"action": "read",  "object": "server123"},
+                            {"action": "write", "object": "server123"}],
+            "hr":          [{"action": "read",  "object": "database456"}]
+        }
+
+        # logic that implements RBAC.
+        default allow = false
+        allow {
+            # lookup the list of roles for the user
+            roles := user_roles["bob"]
+            # for each role in that list
+            r := roles[_]
+            # lookup the permissions list for role r
+            permissions := role_permissions[r]
+            # for each permission
+            p := permissions[_]
+            # check if the permission granted to r matches the user's request
+            p == {"action": "read", "object": "database456"}
+        }
