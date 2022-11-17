@@ -1,16 +1,16 @@
 apiVersion: templates.gatekeeper.sh/v1beta1
 kind: ConstraintTemplate
 metadata:
-  name: anlanauthzhardcoded
+  name: anlanauthzcustompkg
 spec:
   crd:
     spec:
       names:
-        kind: AnlanAuthzHardCoded
+        kind: AnlanAuthzCustomPkg
   targets:
     - target: admission.k8s.gatekeeper
       rego: |
-        package anlanauthzhardcoded
+        package anlanauthzcustompkg
       
         violation[{"msg": msg, "details": {}}] {
             not allow

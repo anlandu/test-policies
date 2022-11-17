@@ -1,12 +1,12 @@
 apiVersion: templates.gatekeeper.sh/v1beta1
 kind: ConstraintTemplate
 metadata:
-  name: anlanauthzhardcoded
+  name: anlanauthzhardcodedReject
 spec:
   crd:
     spec:
       names:
-        kind: AnlanAuthzHardCoded
+        kind: AnlanAuthzHardCodedReject
   targets:
     - target: admission.k8s.gatekeeper.sh
       rego: |
