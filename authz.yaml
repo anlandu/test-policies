@@ -11,14 +11,17 @@ spec:
     - target: admission.k8s.gatekeeper.sh
       rego: |
         package rbac.authz
-
-        # user-role assignments
+      
+        violation[{"msg": msg, "details": {}}] {
+            not allow
+            msg := sprintf("Not authorized under current RBAC user", [])
+        }
+        
         user_roles := {
             "alice": ["engineering", "webdev"],
             "bob": ["hr"]
         }
 
-        # role-permissions assignments
         role_permissions := {
             "engineering": [{"action": "read",  "object": "server123"}],
             "webdev":      [{"action": "read",  "object": "server123"},
@@ -26,17 +29,11 @@ spec:
             "hr":          [{"action": "read",  "object": "database456"}]
         }
 
-        # logic that implements RBAC.
         default allow = false
         allow {
-            # lookup the list of roles for the user
             roles := user_roles["bob"]
-            # for each role in that list
             r := roles[_]
-            # lookup the permissions list for role r
             permissions := role_permissions[r]
-            # for each permission
             p := permissions[_]
-            # check if the permission granted to r matches the user's request
             p == {"action": "read", "object": "database456"}
         }
