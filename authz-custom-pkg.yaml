@@ -8,7 +8,7 @@ spec:
       names:
         kind: AnlanAuthzCustomPkg
   targets:
-    - target: admission.k8s.gatekeeper
+    - target: admission.k8s.gatekeeper.sh
       rego: |
         package anlanauthzcustompkg
       
