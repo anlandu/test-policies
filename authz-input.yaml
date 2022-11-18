@@ -1,0 +1,39 @@
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: anlanauthzinput
+spec:
+  crd:
+    spec:
+      names:
+        kind: AnlanAuthzInput
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package anlanauthzinput
+      
+        violation[{"msg": msg, "details": {}}] {
+            not allow
+            msg := sprintf("Action %v not authorized for object %v under current RBAC user %v", [input.action, input.object, input.user])
+        }
+        
+        user_roles := {
+            "alice": ["engineering", "webdev"],
+            "bob": ["hr"]
+        }
+
+        role_permissions := {
+            "engineering": [{"action": "read",  "object": "server123"}],
+            "webdev":      [{"action": "read",  "object": "server123"},
+                            {"action": "write", "object": "server123"}],
+            "hr":          [{"action": "read",  "object": "database456"}]
+        }
+
+        default allow = false
+        allow {
+            roles := user_roles[input.user]
+            r := roles[_]
+            permissions := role_permissions[r]
+            p := permissions[_]
+            p == {"action": input.action, "object": input.object}
+        }
