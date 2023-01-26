@@ -1,0 +1,15 @@
+apiVersion: mutations.gatekeeper.sh/v1beta1
+kind: AssignMetadata
+metadata:
+  name: demo-annotation-owner
+spec:
+  match:
+    scope: Namespaced
+    name: nginx-*
+    kinds:
+    - apiGroups: ["*"]
+      kinds: ["Pod"]
+  location: "metadata.annotations.owner"
+  parameters:
+    assign:
+      value:  "admin"
