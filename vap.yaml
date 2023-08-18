@@ -31,11 +31,11 @@ spec:
            apiVersion: admissionregistration.k8s.io/v1alpha1
            kind: ValidatingAdmissionPolicy
            spec:
-             paramKind:
-               apiVersion: "foobar/v1"
-               kind: "Placeholder"
-            validations:
-            - expression: "variables.params.labels.all(entry, has(object.metadata.labels) && entry.key in object.metadata.labels)"
-              messageExpression: '"missing required label, requires all of: " + variables.params.labels.map(entry, entry.key).join(", ")'
-            - expression: "!variables.params.labels.exists(entry, has(object.metadata.labels) && entry.key in object.metadata.labels && !string(object.metadata.labels[entry.key]).matches(string(entry.allowedRegex)))"
-              message: "regex mismatch"
+              paramKind:
+                apiVersion: "foobar/v1"
+                kind: "Placeholder"
+              validations:
+              - expression: "variables.params.labels.all(entry, has(object.metadata.labels) && entry.key in object.metadata.labels)"
+                messageExpression: '"missing required label, requires all of: " + variables.params.labels.map(entry, entry.key).join(", ")'
+              - expression: "!variables.params.labels.exists(entry, has(object.metadata.labels) && entry.key in object.metadata.labels && !string(object.metadata.labels[entry.key]).matches(string(entry.allowedRegex)))"
+                message: "regex mismatch"
