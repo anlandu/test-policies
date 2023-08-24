@@ -1,4 +1,4 @@
-apiVersion: templates.gatekeeper.sh/v1beta1
+apiVersion: templates.gatekeeper.sh/v1
 kind: ConstraintTemplate
 metadata:
   name: anlank8sazurenoprivilege
@@ -10,6 +10,9 @@ spec:
       validation:
         # Schema for the `parameters` field
         openAPIV3Schema:
+          type: object
+          description: >-
+            Test description
           properties:
             excludedContainers:
               type: array
