@@ -1,12 +1,12 @@
 apiVersion: templates.gatekeeper.sh/v1
 kind: ConstraintTemplate
 metadata:
-  name: k8sazurev2noprivilege
+  name: anlank8sazurenoprivilege
 spec:
   crd:
     spec:
       names:
-        kind: K8sAzureV2NoPrivilege
+        kind: AnlanK8sAzureNoPrivilege
       validation:
         # Schema for the `parameters` field
         openAPIV3Schema:

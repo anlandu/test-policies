@@ -1,0 +1,22 @@
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: k8spsprestrictions
+  annotations:
+    description: Prevents customers from applying bad Pod Security Policies
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sPSPRestrictions
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8spodsecuritypolicy
+
+        violation[{"msg": msg}] {
+          input_priv_esc := input.review.object.spec.allowPrivilegeEscalation
+          other := data.inventory["cluster"][_]["PodSecurityPolicy"][_]
+          input_priv_esc != other.spec.allowPrivilegeEscalation
+          msg := sprintf("New psp has conflicting privileged flag %v", [input_priv_esc])
+        }
