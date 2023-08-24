@@ -1,7 +1,7 @@
 apiVersion: templates.gatekeeper.sh/v1
 kind: ConstraintTemplate
 metadata:
-  name: anlank8sazurenoprivilege
+  name: anlank8sazurenoprivilegev2
 spec:
   crd:
     spec:
@@ -39,8 +39,8 @@ spec:
             c := input_containers[_]
             not input_container_excluded(c.name)
             not is_excluded(c)
-            c.securityContext.privileged
-            msg := sprintf("Privileged container is not allowed: %v, securityContext: %v", [c.name, c.securityContext])
+            not c.securityContext.privileged
+            msg := sprintf("should be privileged: %v, securityContext: %v", [c.name, c.securityContext])
         }
 
         input_containers[c] {
