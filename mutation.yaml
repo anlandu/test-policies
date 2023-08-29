@@ -4,13 +4,3 @@ metadata:
   name: k8sazureallowprivilegeescalationv2
 spec:
   applyTo:
-  - groups: [""]
-    kinds: ["Pod"]
-    versions: ["v1"]
-  location: "spec.containers[name:*].securityContext.allowPrivilegeEscalation"
-  parameters:
-    pathTests:
-    - subPath: "spec.containers[name:*].securityContext.allowPrivilegeEscalation"
-      condition: MustNotExist
-    assign:
-      value: false
