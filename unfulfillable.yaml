@@ -1,7 +1,7 @@
 apiVersion: templates.gatekeeper.sh/v1beta1
 kind: ConstraintTemplate
 metadata:
-  name: k8suniqueingressunfulfillable
+  name: k8suniqueingresshostunfulfillable
   annotations:
     metadata.gatekeeper.sh/title: "Unique Ingress Host Unfulfillable"
     metadata.gatekeeper.sh/version: 1.0.2
