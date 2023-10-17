@@ -1,9 +1,9 @@
 apiVersion: templates.gatekeeper.sh/v1beta1
 kind: ConstraintTemplate
 metadata:
-  name: k8suniqueingresshost
+  name: k8suniqueingresshostunfulfillable
   annotations:
-    metadata.gatekeeper.sh/title: "Unique Ingress Host"
+    metadata.gatekeeper.sh/title: "Unique Ingress Host Unfulfillable"
     metadata.gatekeeper.sh/version: 1.0.2
     metadata.gatekeeper.sh/requires-sync-data: |
       "[
@@ -24,7 +24,7 @@ spec:
   crd:
     spec:
       names:
-        kind: K8sUniqueIngressHost
+        kind: K8sUniqueIngressHostUnfulfillable
   targets:
     - target: admission.k8s.gatekeeper.sh
       rego: |
