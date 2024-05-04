@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: builtin-versioned-policy-test-bad
+  namespace: default
+  labels:
+    kubernetes.azure.com: foo
+spec:
+  containers:
+  - image: nginx
+    name:  nginx
