@@ -30,6 +30,7 @@ spec:
           source:
            apiVersion: admissionregistration.k8s.io/v1alpha1
            kind: ValidatingAdmissionPolicy
+           generateVAP: true
            spec:
               paramKind:
                 apiVersion: "foobar/v1"
