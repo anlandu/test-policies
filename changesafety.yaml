@@ -1,0 +1,78 @@
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: k8sazurev1changesafetyverification
+  annotations:
+    metadata.gatekeeper.sh/title: "change safety verification verification"
+    metadata.gatekeeper.sh/version: 1.0.0
+    metadata.gatekeeper.sh/requires-external-data-source: change-safety
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sAzureV1ChangeSafetyVerification
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8sazurev1changesafetyverification
+
+        import strings
+
+        # Only validate resources matched by gatekeeper-change-safety-validating-webhook-configuration
+        is_target {
+            input.review.kind.group == "edge.microsoft.com"
+        }
+
+        is_target {
+            input.review.kind.group in ["", "rbac.authorization.k8s.io", "apps", "policy", "expansion.gatekeeper.sh", "config.gatekeeper.sh"]
+            input.review.kind.kind in ["Deployments","Pods","ServiceAccounts","Secrets","Roles","ClusterRoles","RoleBindings","ClusterRoleBindings","PodDisruptionBudgets","ExpansionTemplates","Services","ResourceQuotas","Namespaces","ConfigMaps","Configs"]
+            startswith(input.review.object.metadata.name, "azure-policy")
+        }
+
+        is_target {
+            input.review.kind.group in ["", "rbac.authorization.k8s.io", "apps", "policy", "expansion.gatekeeper.sh", "config.gatekeeper.sh"]
+            input.review.kind.kind in ["Deployments","Pods","ServiceAccounts","Secrets","Roles","ClusterRoles","RoleBindings","ClusterRoleBindings","PodDisruptionBudgets","ExpansionTemplates","Services","ResourceQuotas","Namespaces","ConfigMaps","Configs"]
+            startswith(input.review.object.metadata.name, "gatekeeper")
+        }
+
+        is_target {
+            input.review.kind.group in ["externaldata.gatekeeper.sh","mutations.gatekeeper.sh","status.gatekeeper.sh","templates.gatekeeper.sh","constraints.gatekeeper.sh"]
+            startswith(input.review.object.metadata.name, "change-safety")
+        }
+
+        is_target {
+            input.review.kind.group in ["externaldata.gatekeeper.sh","mutations.gatekeeper.sh","status.gatekeeper.sh","templates.gatekeeper.sh","constraints.gatekeeper.sh"]
+            contains(input.review.object.metadata.name, "changesafety")
+        }
+
+        # Get data from change safety external data source
+        remote_data := response{
+            response := external_data({"provider": "change-safety-provider", "keys": base64.encode(input.review)})
+        }
+
+        # Base Gatekeeper violation
+        violation[{"msg": msg}] {
+            is_target
+            general_violation[{"result": msg}]
+        }
+
+        # Check if there are any errors calling ed provider
+        general_violation[{"result": result}] {
+            remote_data.system_error != ""
+            result := sprintf("System error calling external data provider: %s", [remote_data.system_error])
+        }
+
+        # Check if there are errors during validation
+        general_violation[{"result": result}] {
+            remote_data.system_error == ""
+            count(remote_data.errors) > 0
+            result := sprintf("Error validating one or more images: %s", [remote_data.errors])
+        }
+
+        general_violation[{"result": result}] {
+            remote_data.system_error == ""
+            subject_validation := remote_data.responses[_]
+            verifierReport := subject_validation[1].verifierReports[_]
+            not verifierReport.isSuccess
+            result := sprintf("Change safety verification failed %s; Subject: %s; Error: %s", [short_error, subject_validation[0], verifierReport.message])
+        }
