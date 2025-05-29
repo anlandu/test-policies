@@ -16,38 +16,42 @@ spec:
       rego: |
         package k8sazurev1changesafetyverification
 
-        import strings
-
-        # Only validate resources matched by gatekeeper-change-safety-validating-webhook-configuration
+        Only validate resources matched by gatekeeper-change-safety-validating-webhook-configuration
         is_target {
             input.review.kind.group == "edge.microsoft.com"
         }
 
-        is_target {
-            input.review.kind.group in ["", "rbac.authorization.k8s.io", "apps", "policy", "expansion.gatekeeper.sh", "config.gatekeeper.sh"]
-            input.review.kind.kind in ["Deployments","Pods","ServiceAccounts","Secrets","Roles","ClusterRoles","RoleBindings","ClusterRoleBindings","PodDisruptionBudgets","ExpansionTemplates","Services","ResourceQuotas","Namespaces","ConfigMaps","Configs"]
-            startswith(input.review.object.metadata.name, "azure-policy")
-        }
+        default DEFAULT_CHANGE_SAFETY_INFRA_GROUPS=["", "rbac.authorization.k8s.io", "apps", "policy", "expansion.gatekeeper.sh", "config.gatekeeper.sh"]
+        default DEFAULT_CHANGE_SAFETY_INFRA_KINDS=["Deployment","Pod","ServiceAccount","Secret","Role","ClusterRole","RoleBinding","ClusterRoleBinding","PodDisruptionBudget","ExpansionTemplate","Service","ResourceQuota","Namespace","ConfigMap","Config"]
+        default DEFAULT_CHANGE_SAFETY_POLICY_GROUPS=["externaldata.gatekeeper.sh","mutations.gatekeeper.sh","status.gatekeeper.sh","templates.gatekeeper.sh","constraints.gatekeeper.sh"]
 
         is_target {
-            input.review.kind.group in ["", "rbac.authorization.k8s.io", "apps", "policy", "expansion.gatekeeper.sh", "config.gatekeeper.sh"]
-            input.review.kind.kind in ["Deployments","Pods","ServiceAccounts","Secrets","Roles","ClusterRoles","RoleBindings","ClusterRoleBindings","PodDisruptionBudgets","ExpansionTemplates","Services","ResourceQuotas","Namespaces","ConfigMaps","Configs"]
+            input.review.kind.group == DEFAULT_CHANGE_SAFETY_INFRA_GROUPS[_]
+            input.review.kind.kind == DEFAULT_CHANGE_SAFETY_INFRA_KINDS[_]
             startswith(input.review.object.metadata.name, "gatekeeper")
         }
 
         is_target {
-            input.review.kind.group in ["externaldata.gatekeeper.sh","mutations.gatekeeper.sh","status.gatekeeper.sh","templates.gatekeeper.sh","constraints.gatekeeper.sh"]
+            input.review.kind.group == DEFAULT_CHANGE_SAFETY_INFRA_GROUPS[_]
+            input.review.kind.kind == DEFAULT_CHANGE_SAFETY_INFRA_KINDS[_]
+            startswith(input.review.object.metadata.name, "azure-policy")
+        }
+
+
+        is_target {
+            input.review.kind.group == DEFAULT_CHANGE_SAFETY_POLICY_GROUPS[_]
             startswith(input.review.object.metadata.name, "change-safety")
         }
 
         is_target {
-            input.review.kind.group in ["externaldata.gatekeeper.sh","mutations.gatekeeper.sh","status.gatekeeper.sh","templates.gatekeeper.sh","constraints.gatekeeper.sh"]
+            input.review.kind.group == DEFAULT_CHANGE_SAFETY_POLICY_GROUPS[_]
             contains(input.review.object.metadata.name, "changesafety")
         }
 
         # Get data from change safety external data source
         remote_data := response{
-            response := external_data({"provider": "change-safety-provider", "keys": base64.encode(input.review)})
+            is_target
+            response := external_data({"provider": "change-safety-provider", "keys": ["foo"]})
         }
 
         # Base Gatekeeper violation
@@ -74,5 +78,5 @@ spec:
             subject_validation := remote_data.responses[_]
             verifierReport := subject_validation[1].verifierReports[_]
             not verifierReport.isSuccess
-            result := sprintf("Change safety verification failed %s; Subject: %s; Error: %s", [short_error, subject_validation[0], verifierReport.message])
+            result := sprintf("Change safety verification failed; Subject: %s; Error: %s", [subject_validation[0], verifierReport.message])
         }
